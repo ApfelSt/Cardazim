@@ -3,6 +3,8 @@ import argparse
 import struct
 import sys
 from uaclient.yaml import parser
+import threading
+import time
 
 
 def handle_client(client_socket, client_address):
@@ -16,6 +18,7 @@ def handle_client(client_socket, client_address):
     message_data = client_socket.recv(message_length)
     message = message_data.decode()
 
+    time.sleep(10)
     print(f"Received message: {message}")
 
     client_socket.close()
@@ -32,9 +35,12 @@ def run_server(ip, port):
     print(f"Server listening on {ip}:{port}...")
 
     while True:
-        server_socket.listen(5)
+        server_socket.listen()
         client_socket, client_address = server_socket.accept()
-        handle_client(client_socket, client_address)
+        new_thread = threading.Thread(
+            target=handle_client, args=(client_socket, client_address)
+        )
+        new_thread.start()
 
 
 def get_args():
