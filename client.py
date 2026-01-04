@@ -4,12 +4,7 @@ import struct
 import socket
 
 
-###########################################################
-####################### YOUR CODE #########################
-###########################################################
-
-
-def send_data(server_ip: str, server_port: int, data: str) -> None:
+def send_data(server_ip, server_port, data):
     """
     Send data to server in address (server_ip, server_port).
     """
@@ -21,11 +16,6 @@ def send_data(server_ip: str, server_port: int, data: str) -> None:
 
     sock.send(length + data_bytes)
     sock.close()
-
-
-###########################################################
-##################### END OF YOUR CODE ####################
-###########################################################
 
 
 def get_args() -> argparse.Namespace:
