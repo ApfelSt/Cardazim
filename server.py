@@ -5,7 +5,7 @@ import sys
 from uaclient.yaml import parser
 
 
-def handle_client(client_socket, client_address):
+def handle_client(client_socket: socket.socket, client_address: tuple) -> None:
     """
     Handle a client connection, receive data and print it.
     """
@@ -21,7 +21,7 @@ def handle_client(client_socket, client_address):
     client_socket.close()
 
 
-def run_server(ip, port):
+def run_server(ip: str, port: int) -> None:
     """
     Run a simple TCP server that listens on the given IP and port.
     """
@@ -37,7 +37,7 @@ def run_server(ip, port):
         handle_client(client_socket, client_address)
 
 
-def get_args():
+def get_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Run a server.")
     parser.add_argument("ip", type=str, help="the server IP address")
     parser.add_argument("port", type=int, help="the server port")

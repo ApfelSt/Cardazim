@@ -9,7 +9,7 @@ import socket
 ###########################################################
 
 
-def send_data(server_ip, server_port, data):
+def send_data(server_ip: str, server_port: int, data: str) -> None:
     """
     Send data to server in address (server_ip, server_port).
     """
@@ -28,7 +28,7 @@ def send_data(server_ip, server_port, data):
 ###########################################################
 
 
-def get_args():
+def get_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Send data to server.")
     parser.add_argument("server_ip", type=str, help="the server ip")
     parser.add_argument("server_port", type=int, help="the server port")
