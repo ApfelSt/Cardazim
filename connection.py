@@ -1,20 +1,30 @@
+from __future__ import (
+    annotations,
+)  # So we can use Connection type hints within the class
 import socket
 import struct
+from types import TracebackType
+from typing import Type
 
 
 class Connection:
-    def __init__(self, connection: socket.socket):
+    def __init__(self, connection: socket.socket) -> None:
         self.connection = connection
         self.src = self.connection.getsockname()
         self.dst = self.connection.getpeername()
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"Connection from {self.src} to {self.dst}"
 
-    def __enter__(self) -> "Connection":
+    def __enter__(self) -> Connection:
         return self
 
-    def __exit__(self, exc_type, exc_value, traceback) -> None:
+    def __exit__(
+        self,
+        exc_type: Type[BaseException] | None,
+        exc_value: BaseException | None,
+        traceback: TracebackType | None,
+    ) -> None:
         self.close()
 
     def send(self, msg: str) -> None:
@@ -38,7 +48,7 @@ class Connection:
         self.connection.close()
 
     @classmethod
-    def connect(cls, ip: str, port: int) -> "Connection":
+    def connect(cls, ip: str, port: int) -> Connection:
         """Establish a connection to the given IP and port."""
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)

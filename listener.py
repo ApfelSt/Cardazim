@@ -1,9 +1,12 @@
+from __future__ import annotations  # So we can use Listener type hints within the class
 import socket
 from connection import Connection
+from typing import Type
+from types import TracebackType
 
 
 class Listener:
-    def __init__(self, ip: str, port: int, backlog: int = 1000):
+    def __init__(self, ip: str, port: int, backlog: int = 1000) -> None:
         self.ip = ip
         self.port = port
         self.backlog = backlog
@@ -11,7 +14,7 @@ class Listener:
         self.server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.server_socket.bind((self.ip, self.port))
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"Listener(port={self.port}, host={self.ip}, backlog={self.backlog})"
 
     def start(self) -> None:
@@ -27,9 +30,14 @@ class Listener:
         client_socket, _ = self.server_socket.accept()
         return Connection(client_socket)
 
-    def __enter__(self) -> "Listener":
+    def __enter__(self) -> Listener:
         self.start()
         return self
 
-    def __exit__(self, exc_type, exc_value, traceback) -> None:
+    def __exit__(
+        self,
+        exc_type: Type[BaseException] | None,
+        exc_value: BaseException | None,
+        traceback: TracebackType | None,
+    ) -> None:
         self.stop()
