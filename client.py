@@ -1,21 +1,14 @@
 import argparse
 import sys
-import struct
-import socket
+from connection import Connection
 
 
 def send_data(server_ip, server_port, data):
     """
     Send data to server in address (server_ip, server_port).
     """
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    sock.connect((server_ip, server_port))
-
-    data_bytes = data.encode()
-    length = struct.pack("<I", len(data_bytes))
-
-    sock.send(length + data_bytes)
-    sock.close()
+    with Connection.connect(server_ip, server_port) as conn:
+        conn.send(data)
 
 
 def get_args():
