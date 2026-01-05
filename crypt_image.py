@@ -11,7 +11,7 @@ NONCE = b"arazim"
 
 
 class CryptImage:
-    def __init__(self, image: Image.Image, key_hash: str | None) -> None:
+    def __init__(self, image: Image.Image, key_hash: bytes | None) -> None:
         self.image = image
         self.key_hash = key_hash
 
@@ -39,8 +39,10 @@ class CryptImage:
         """load image from bytes"""
         self.image = Image.frombytes(self.image.mode, self.image.size, image)
 
-    def encrypt(self, key: str) -> None:
+    def encrypt(self, key: str | None) -> None:
         """encrypt the image with sha256(key)"""
+        if key is None:
+            raise ValueError("Key must be provided for encryption")
         cipher = CryptImage._create_cipher(key)
         encrypted_image = cipher.encrypt(self.image.tobytes())
         self._load_image_from_bytes(encrypted_image)
