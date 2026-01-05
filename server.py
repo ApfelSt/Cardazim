@@ -4,10 +4,9 @@ import struct
 import sys
 from uaclient.yaml import parser
 import threading
-import time
 
 
-def handle_client(client_socket, client_address):
+def handle_client(client_socket: socket.socket, client_address: tuple) -> None:
     """
     Handle a client connection, receive data and print it.
     """
@@ -18,13 +17,12 @@ def handle_client(client_socket, client_address):
     message_data = client_socket.recv(message_length)
     message = message_data.decode()
 
-    time.sleep(10)
     print(f"Received message: {message}")
 
     client_socket.close()
 
 
-def run_server(ip, port):
+def run_server(ip: str, port: int) -> None:
     """
     Run a simple TCP server that listens on the given IP and port.
     """
