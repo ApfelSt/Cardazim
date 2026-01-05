@@ -3,9 +3,10 @@ import argparse
 import struct
 import sys
 from uaclient.yaml import parser
+import threading
 
 
-def handle_client(client_socket, client_address):
+def handle_client(client_socket: socket.socket, client_address: tuple) -> None:
     """
     Handle a client connection, receive data and print it.
     """
@@ -21,7 +22,7 @@ def handle_client(client_socket, client_address):
     client_socket.close()
 
 
-def run_server(ip, port):
+def run_server(ip: str, port: int) -> None:
     """
     Run a simple TCP server that listens on the given IP and port.
     """
@@ -32,9 +33,12 @@ def run_server(ip, port):
     print(f"Server listening on {ip}:{port}...")
 
     while True:
-        server_socket.listen(5)
+        server_socket.listen()
         client_socket, client_address = server_socket.accept()
-        handle_client(client_socket, client_address)
+        new_thread = threading.Thread(
+            target=handle_client, args=(client_socket, client_address)
+        )
+        new_thread.start()
 
 
 def get_args():
