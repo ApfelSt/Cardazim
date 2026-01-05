@@ -8,7 +8,8 @@ UINT_SIZE = 4  # size of unsigned ints for length prefixes
 BYTES_PER_PIXEL = 3  # assuming RGB images
 BYTE_ORDER = "little"
 PIXEL_FORMAT = "RGB"
-DUMMY_KEY = b"\x00" * UINT_SIZE  # placeholder for missing key hash
+HASH_SIZE = 32  # size of SHA-256 hash
+DUMMY_KEY = b"\x00" * HASH_SIZE  # placeholder for missing key hash
 
 
 class Card:
@@ -54,14 +55,14 @@ class Card:
         return value.to_bytes(UINT_SIZE, byteorder=BYTE_ORDER)
 
     @staticmethod
-    def _bytes_to_int(b: bytes) -> int:
+    def _bytes_to_int(value: bytes) -> int:
         """convert bytes of size UINT_SIZE to an integer"""
-        return int.from_bytes(b, byteorder=BYTE_ORDER)
+        return int.from_bytes(value, byteorder=BYTE_ORDER)
 
     @staticmethod
-    def _serialize_string(s: str) -> bytes:
+    def _serialize_string(data: str) -> bytes:
         """serialize a string to bytes with its length prefixed as 4 bytes"""
-        encoded = s.encode()
+        encoded = data.encode()
         length = Card._int_to_bytes(len(encoded))
         return length + encoded
 
@@ -110,8 +111,8 @@ class Card:
         img_data = data[offset : offset + img_size]
         offset += img_size
         image = Image.frombytes(PIXEL_FORMAT, (width, height), img_data)
-        key_hash = data[offset : offset + UINT_SIZE]
-        offset += UINT_SIZE
+        key_hash = data[offset : offset + HASH_SIZE]
+        offset += HASH_SIZE
         if key_hash != DUMMY_KEY:
             crypt_image = CryptImage(image, key_hash)
         else:
@@ -129,10 +130,12 @@ class Card:
         return cls(name, creator, image, riddle)
 
 
+"""
+The example from the file. this works (delete later).
 if __name__ == "__main__":
     name = "Sample Card"
     creator = "Test Creator"
-    riddle = "What has keys but can't open locks?"
+    riddle = "a"
     solution = "A piano"
     path = "image.jpg"
     card = Card.create_from_path(name, creator, path, riddle, solution)
@@ -143,3 +146,4 @@ if __name__ == "__main__":
         card2.solution = solution
     assert repr(card) == repr(card2)
     card2.image.image.show()
+"""
