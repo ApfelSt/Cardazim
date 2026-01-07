@@ -1,6 +1,4 @@
-from __future__ import (
-    annotations,
-)  # So we can use Connection type hints within the class
+from __future__ import annotations
 import socket
 import struct
 from types import TracebackType
@@ -27,19 +25,21 @@ class Connection:
     ) -> None:
         self.close()
 
-    def send(self, msg: str) -> None:
+    def send(self, msg: str | bytes) -> None:
         """Send a message through the connection."""
-        data = msg.encode()
+        data = msg.encode() if isinstance(msg, str) else msg
         length = struct.pack("<I", len(data))
         self.connection.sendall(length + data)
 
-    def receive(self) -> str:
+    def receive(self) -> bytes:
         """Receive a message from the connection."""
         try:
             packed = self.connection.recv(4)
             unpacked = struct.unpack("<I", packed)[0]
             data = self.connection.recv(unpacked)
-            return data.decode()
+            while len(data) < unpacked:
+                data += self.connection.recv(unpacked - len(data))
+            return data
         except Exception as error:
             raise ConnectionError(f"Failed to receive message: {error}")
 

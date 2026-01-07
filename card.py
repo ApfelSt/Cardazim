@@ -128,22 +128,3 @@ class Card:
         image, offset = cls._deserialize_image(data, offset)
         riddle, offset = cls._deserialize_string(data, offset)
         return cls(name, creator, image, riddle)
-
-
-"""
-The example from the file. this works (delete later).
-if __name__ == "__main__":
-    name = "Sample Card"
-    creator = "Test Creator"
-    riddle = "a"
-    solution = "A piano"
-    path = "image.jpg"
-    card = Card.create_from_path(name, creator, path, riddle, solution)
-    card.image.encrypt(card.solution)
-    data = card.serialize()
-    card2 = Card.deserialize(data)
-    if card2.image.decrypt(solution):
-        card2.solution = solution
-    assert repr(card) == repr(card2)
-    card2.image.image.show()
-"""
