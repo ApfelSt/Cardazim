@@ -4,6 +4,7 @@ from uaclient.yaml import parser
 import threading
 from listener import Listener
 from connection import Connection
+from card import Card
 
 
 def handle_client(client_connection: Connection) -> None:
@@ -14,7 +15,8 @@ def handle_client(client_connection: Connection) -> None:
         print(f"Connection from {client_connection.src}")
         data = client_connection.receive()
         if data:
-            print(f"Received data: {data}")
+            card = Card.deserialize(data)
+            print(f"Received card: {card}")
 
 
 def run_server(ip: str, port: int) -> None:
@@ -39,11 +41,10 @@ def get_args():
     return parser.parse_args()
 
 
-def main():
+def main(args: argparse.Namespace) -> int | None:
     """
     Implementation of CLI and running the server.
     """
-    args = get_args()
     try:
         run_server(args.ip, args.port)
     except Exception as error:
@@ -52,4 +53,5 @@ def main():
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    args = get_args()
+    sys.exit(main(args))
