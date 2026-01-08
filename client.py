@@ -28,11 +28,10 @@ def get_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def main():
+def main(args: argparse.Namespace) -> int:
     """
     Implementation of CLI and sending data to server.
     """
-    args = get_args()
     try:
         card = Card.create_from_path(
             name=args.card_name,
@@ -53,4 +52,5 @@ def main():
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    args = get_args()
+    sys.exit(main(args))

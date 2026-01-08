@@ -41,11 +41,10 @@ def get_args():
     return parser.parse_args()
 
 
-def main():
+def main(args: argparse.Namespace) -> int | None:
     """
     Implementation of CLI and running the server.
     """
-    args = get_args()
     try:
         run_server(args.ip, args.port)
     except Exception as error:
@@ -54,4 +53,5 @@ def main():
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    args = get_args()
+    sys.exit(main(args))
