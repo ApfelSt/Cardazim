@@ -8,6 +8,8 @@ import os
 
 IMG_PATH = "image.jpg"
 META_PATH = "metadata.json"
+SOLVED_DIR = "solved"
+UNSOLVED_DIR = "unsolved"
 
 
 class CardManager:
@@ -32,9 +34,21 @@ class CardManager:
     def __init__(self, storage_dir: Union[str, PathLike]) -> None:
         """self.cards: card creator -> card name -> card id"""
         self.storage_dir = pathlib.Path(storage_dir)
-        self.storage_dir.mkdir(parents=True, exist_ok=True)
+        self._create_directory_structure()
         self.cards: dict[str, dict[str, str]] = {}
         self._id_generator = self._generate_identifier()
+
+    def _create_directory_structure(self) -> None:
+        """create the directory structure for storing cards:
+        storage_dir/
+            solved/
+            unsolved/
+        """
+        self.storage_dir.mkdir(parents=True, exist_ok=True)
+        solved_dir_path = CardManager._to_path(self.storage_dir, SOLVED_DIR)
+        unsolved_dir_path = CardManager._to_path(self.storage_dir, UNSOLVED_DIR)
+        os.makedirs(solved_dir_path, exist_ok=True)
+        os.makedirs(unsolved_dir_path, exist_ok=True)
 
     def get_identifier(self, card: Card) -> str:
         """get or create a unique identifier for the given card.
@@ -67,7 +81,10 @@ class CardManager:
     def save(self, card: Card) -> None:
         """save the given card to the storage directory"""
         identifier = self.get_identifier(card)
-        card_dir = f"{self.storage_dir}/{identifier}"
+        if card.solution:
+            card_dir = CardManager._to_path(self.storage_dir, SOLVED_DIR, identifier)
+        else:
+            card_dir = CardManager._to_path(self.storage_dir, UNSOLVED_DIR, identifier)
         os.makedirs(card_dir, exist_ok=True)
 
         image_path = CardManager._to_path(card_dir, IMG_PATH)
