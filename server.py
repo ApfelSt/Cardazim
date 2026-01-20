@@ -5,12 +5,13 @@ import threading
 from listener import Listener
 from connection import Connection
 from card import Card
-from card_manager import CardManager
+from saver import Saver
 from typing import Union
 from os import PathLike
+from filesystem_driver import FilesystemDriver
 
 
-def handle_client(client_connection: Connection, card_manager: CardManager) -> None:
+def handle_client(client_connection: Connection, card_manager: Saver) -> None:
     """
     Handle a client connection, receive data and print it.
     """
@@ -19,16 +20,17 @@ def handle_client(client_connection: Connection, card_manager: CardManager) -> N
         data = client_connection.receive()
         if data:
             card = Card.deserialize(data)
-            print(f"Received card: {card}")
             card_manager.save(card)
             print(f"Card saved: {card.name} by {card.creator}")
+            loaded_card = card_manager.load(card.name, card.creator)
+            print(f"Card loaded: {loaded_card.name} by {loaded_card.creator}")
 
 
-def run_server(ip: str, port: int, dir: Union[str, PathLike] = ".") -> None:
+def run_server(ip: str, port: int, dir: Union[str, PathLike] = "images") -> None:
     """
     Run a simple TCP server that listens on the given IP and port.
     """
-    card_manager = CardManager(dir)
+    card_manager = Saver(FilesystemDriver(), dir)
 
     with Listener(ip, port) as server_listener:
         print(f"Server listening on {ip}:{port}...")
