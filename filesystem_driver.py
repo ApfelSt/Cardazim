@@ -64,11 +64,11 @@ class FilesystemDriver(CardDriver):
 
         self._update_index(metadata, identifier)
 
-    def load(self, identifier: str) -> dict[str, str]:
+    def load(self, identifier: str) -> dict[str, str] | None:
         """load a card by its identifier. find the card in either solved or unsolved directories and then load."""
         print(f"Loading card with identifier: {identifier}")
         pattern = re.compile(rf".*{identifier}$")
-        card_dir = ""
+        card_dir = None
         for status_dir in [SOLVED_DIR, UNSOLVED_DIR]:
             for entry in os.listdir(
                 FilesystemDriver._to_path(self.storage_dir, status_dir)
@@ -81,6 +81,9 @@ class FilesystemDriver(CardDriver):
             if card_dir:
                 break
 
+        if not card_dir:
+            return None
+
         metadata_path = FilesystemDriver._to_path(self.storage_dir, card_dir, META_PATH)
         print(f"Loading metadata from: {metadata_path}")
         with open(metadata_path, "r", encoding="utf-8") as f:
@@ -92,7 +95,7 @@ class FilesystemDriver(CardDriver):
         """get a list of all card creators in the storage"""
         return list(self.cards.keys())
 
-    def get_creator_cards(self, creator: str) -> list[dict[str, str]]:
+    def get_creator_cards(self, creator: str) -> list[dict[str, str] | None]:
         """get a list of all card names for the given creator"""
         if creator not in self.cards:
             return []

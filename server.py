@@ -8,7 +8,9 @@ from card import Card
 from saver import Saver
 from typing import Union
 from os import PathLike
+from card_driver import CardDriver
 from filesystem_driver import FilesystemDriver
+from sql_driver import SQLDriver
 
 
 def handle_client(client_connection: Connection, card_manager: Saver) -> None:
@@ -26,11 +28,13 @@ def handle_client(client_connection: Connection, card_manager: Saver) -> None:
             print(f"Card loaded: {loaded_card.name} by {loaded_card.creator}")
 
 
-def run_server(ip: str, port: int, dir: Union[str, PathLike] = "images") -> None:
+def run_server(
+    ip: str, port: int, driver: CardDriver, dir: Union[str, PathLike] = "images"
+) -> None:
     """
     Run a simple TCP server that listens on the given IP and port.
     """
-    card_manager = Saver(FilesystemDriver(), dir)
+    card_manager = Saver(driver, dir)
 
     with Listener(ip, port) as server_listener:
         print(f"Server listening on {ip}:{port}...")
@@ -46,6 +50,18 @@ def get_args():
     parser = argparse.ArgumentParser(description="Run a server.")
     parser.add_argument("ip", type=str, help="the server IP address")
     parser.add_argument("port", type=int, help="the server port")
+    parser.add_argument(
+        "driver",
+        type=str,
+        choices=["filesystem", "sql"],
+        help="the storage driver to use",
+    )
+    parser.add_argument(
+        "--dir",
+        type=str,
+        default="images",
+        help="the directory to store images (for filesystem driver)",
+    )
     return parser.parse_args()
 
 
@@ -54,7 +70,14 @@ def main(args: argparse.Namespace) -> int | None:
     Implementation of CLI and running the server.
     """
     try:
-        run_server(args.ip, args.port)
+        match args.driver:
+            case "filesystem":
+                driver = FilesystemDriver()
+            case "sql":
+                driver = SQLDriver()
+            case _:
+                raise ValueError(f"Unknown driver: {args.driver}")
+        run_server(args.ip, args.port, driver, args.dir)
     except Exception as error:
         print(f"ERROR: {error}")
         return 1

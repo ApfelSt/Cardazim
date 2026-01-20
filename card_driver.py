@@ -15,7 +15,7 @@ class CardDriver(ABC):
         pass
 
     @abstractmethod
-    def load(self, identifier: str) -> dict[str, str]:
+    def load(self, identifier: str) -> dict[str, str] | None:
         """Load the card data associated with the identifier."""
         pass
 
@@ -25,8 +25,8 @@ class CardDriver(ABC):
         pass
 
     @abstractmethod
-    def get_creator_cards(self, creator: str) -> list[dict[str, str]]:
-        """Return a list of card names created by the specified creator."""
+    def get_creator_cards(self, creator: str) -> list[dict[str, str] | None]:
+        """Return a list of cards created by the specified creator."""
         pass
 
     @abstractmethod
