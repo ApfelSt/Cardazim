@@ -23,7 +23,7 @@ class SQLDriver(CardDriver):
         self._create_tables()
 
     def _create_tables(self) -> None:
-        """create the following tables if they do not exist:
+        """create the following tables, dropping existing ones if they exist:
         - metadata: stores card metadata with columns:
             - identifier (TEXT PRIMARY KEY)
             - metadata (TEXT)
@@ -33,24 +33,25 @@ class SQLDriver(CardDriver):
             - identifier (TEXT PRIMARY KEY)
         """
         connection = sqlite3.connect(self.db_path)
-        with connection:
-            connection.execute(
-                f"""
-                CREATE TABLE IF NOT EXISTS {META_TABLE} (
-                    identifier TEXT PRIMARY KEY,
-                    metadata TEXT
-                    )
-            """
+        connection.execute(
+            f"""
+            CREATE TABLE IF NOT EXISTS {META_TABLE} (
+                identifier TEXT PRIMARY KEY,
+                metadata TEXT,
+                is_solved INTEGER DEFAULT 0
             )
-            connection.execute(
-                f"""
-                CREATE TABLE IF NOT EXISTS {ID_TABLE} (
-                    creator TEXT,
-                    name TEXT,
-                    identifier TEXT PRIMARY KEY
-                    )
             """
+        )
+        connection.execute(
+            f"""
+            CREATE TABLE IF NOT EXISTS {ID_TABLE} (
+                creator TEXT,
+                name TEXT,
+                identifier TEXT PRIMARY KEY
             )
+            """
+        )
+        connection.commit()
 
     def get_identifier(self, name: str, creator: str) -> str | None:
         """get the unique identifier for the given card.
@@ -121,7 +122,7 @@ class SQLDriver(CardDriver):
     def save(self, metadata: dict[str, str], identifier: str) -> None:
         """Save the card data associated with the identifier."""
         connection = sqlite3.connect(self.db_path)
-        cursor = connection.execute(
+        connection.execute(
             f"""
                 INSERT OR REPLACE INTO {META_TABLE} VALUES (?, ?)
                 """,

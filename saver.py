@@ -6,6 +6,7 @@ import json
 import pathlib
 import os
 from card_driver import CardDriver
+from crypt_image import CryptImage
 
 IMG_PATH = "image.jpg"
 META_PATH = "metadata.json"
@@ -45,16 +46,16 @@ class Saver:
         name = card.name
         creator = card.creator
 
-        if (
-            creator in self.driver.get_creators()
-            and name in self.driver.get_creator_cards(creator)
-        ):
-            return self.driver.get_identifier(name, creator)
+        identifier = self.driver.get_identifier(name, creator)
+        if identifier:
+            return identifier
 
         new_id = next(self._id_generator)
         return Saver._to_identifier(name, creator, new_id)
 
-    def _get_metadata(self, card: Card, image_path: Union[str, PathLike]) -> dict:
+    def _to_metadata(
+        self, card: Card, image_path: Union[str, PathLike]
+    ) -> dict[str, str]:
         """get metadata dictionary for the given card"""
         metadata = {
             "name": card.name,
@@ -62,6 +63,7 @@ class Saver:
             "riddle": card.riddle,
             "solution": card.solution,
             "image_path": str(image_path),
+            "key_hash": (card.image.key_hash.hex() if card.image.key_hash else ""),
         }
         return metadata
 
@@ -73,25 +75,142 @@ class Saver:
         image_path = Saver._to_path(self.image_dir, image_name)
         card.image.image.save(image_path)
 
-        metadata = self._get_metadata(card, image_path)
+        metadata = self._to_metadata(card, image_path)
         self.driver.save(metadata, identifier)
 
-    def load(self, name: str, creator: str) -> Card:
-        """load a card by its name and creator"""
-        if (
-            creator not in self.driver.get_creators()
-            or name not in self.driver.get_creator_card_names(creator)
-        ):
-            raise ValueError(f"Creator '{creator}' not found.")
-
-        identifier = self.driver.get_identifier(name, creator)
-        metadata = self.driver.load(identifier)
-
-        card = Card.create_from_path(
+    def _to_card(self, metadata: dict[str, str]) -> Card:
+        """convert metadata dictionary to a Card instance"""
+        return Card.create_from_path(
             name=metadata["name"],
             creator=metadata["creator"],
             image_path=metadata["image_path"],
             riddle=metadata["riddle"],
             solution=metadata["solution"],
         )
-        return card
+
+    def _load_metadata(self, name: str, creator: str) -> dict[str, str] | None:
+        """load the metadata of the card"""
+        identifier = self.driver.get_identifier(name, creator)
+        if not identifier:
+            return None
+        metadata = self.driver.load(identifier)
+        return metadata
+
+    def load(self, name: str, creator: str) -> Card | None:
+        """load a card by its name and creator"""
+        metadata = self._load_metadata(name, creator)
+
+        if not metadata:
+            return None
+
+        return self._to_card(metadata)
+
+    def get_creators(self) -> list[str]:
+        """get a list of all creators"""
+        return self.driver.get_creators()
+
+    def get_creator_cards(
+        self, creator: str, solved: bool = False, all: bool = False
+    ) -> list[Card]:
+        """get a list of cards for a specific creator, filtered by solved status"""
+        card_metas = self.driver.get_creator_cards(creator)
+        cards: list[Card] = []
+        for meta in card_metas:
+            if not meta:
+                continue
+            if all:
+                cards.append(self._to_card(meta))
+            elif solved == (meta["solution"] is not None):
+                cards.append(self._to_card(meta))
+        return cards
+
+    def get_creator_card_names(
+        self, creator: str, solved: bool = False, all: bool = False
+    ) -> list[str]:
+        """get a list of card names for a specific creator"""
+        return [card.name for card in self.get_creator_cards(creator, solved, all)]
+
+    @staticmethod
+    def get_metadata(card: Card) -> dict[str, str]:
+        """get metadata dictionary for the given card"""
+        metadata = {
+            "name": card.name,
+            "creator": card.creator,
+            "riddle": card.riddle,
+            "solution": card.solution,
+        }
+        return metadata
+
+    def get_image_path(self, name: str, creator: str) -> Union[str, PathLike] | None:
+        metadata = self._load_metadata(name, creator)
+        return metadata["image_path"] if metadata else None
+
+    def find_cards(self, **query_params: str) -> list[Card]:
+        """find all cards that have the query as a substring in their metadata values"""
+        matching_cards: list[Card] = []
+        creators = self.get_creators()
+        for creator in creators:
+            cards = self.get_creator_cards(creator, all=True)
+            for card in cards:
+                match = True
+                for key, value in query_params.items():
+                    card_value = getattr(card, key, "")
+                    if value not in card_value:
+                        match = False
+                        break
+                if match:
+                    matching_cards.append(card)
+        return matching_cards
+
+    def solve_card(self, name: str, creator: str, solution: str) -> bool:
+        """mark the card as solved if the solution is correct"""
+        metadata = self._load_metadata(name, creator)
+        if not metadata:
+            return False
+        if not metadata["key_hash"]:
+            return False  # no encryption, cannot solve
+
+        key_hash = metadata["key_hash"]
+        encrypted_image = CryptImage.create_from_path(metadata["image_path"], key_hash)
+        sol_check = encrypted_image.decrypt(solution)
+        if not sol_check:
+            return False
+
+        # update the card metadata to remove the key_hash and add the solution
+        os.remove(metadata["image_path"])
+        encrypted_image.image.save(metadata["image_path"])
+
+        metadata["solution"] = solution
+        metadata["key_hash"] = ""
+        identifier = self.driver.get_identifier(name, creator)
+        if not identifier:
+            return False
+        self.driver.save(metadata, identifier)
+        return True
+
+    def init_simple_db(self) -> None:
+        """initialize a simple database by scanning the image directory"""
+        card = Card.create_from_path(
+            name="Arazim",
+            creator="Erez",
+            image_path="image.jpg",
+            riddle="What has keys but can't open locks?",
+            solution="A piano",
+        )
+        self.save(card)
+        card = Card.create_from_path(
+            name="Talpiot",
+            creator="Gani",
+            image_path="image2.jpg",
+            riddle="Who is the king of nabaz?",
+            solution="Gani",
+        )
+        self.save(card)
+
+        img = CryptImage.create_from_path("image2.jpg")
+        img.encrypt("mooli")
+        card = Card(
+            name="Secret", creator="Gani", image=img, riddle="Who is the king of nabaz?"
+        )
+        self.save(card)
+        # self.solve_card("Secret", "Gani", "mooli")

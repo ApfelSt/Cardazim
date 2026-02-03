@@ -16,10 +16,12 @@ class CryptImage:
         self.key_hash = key_hash
 
     @classmethod
-    def create_from_path(cls, image_path: Union[str, PathLike]) -> CryptImage:
+    def create_from_path(
+        cls, image_path: Union[str, PathLike], key_hash: bytes | None = None
+    ) -> CryptImage:
         """create CryptImage instance from image file path"""
         image = Image.open(image_path)
-        return cls(image, None)
+        return cls(image, key_hash)
 
     @staticmethod
     def _hash_key(key: str, n: int = NUM_ITERS) -> bytes:
