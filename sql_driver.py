@@ -121,12 +121,13 @@ class SQLDriver(CardDriver):
 
     def save(self, metadata: dict[str, str], identifier: str) -> None:
         """Save the card data associated with the identifier."""
+        is_solved = metadata["solution"] is not None
         connection = sqlite3.connect(self.db_path)
         connection.execute(
             f"""
-                INSERT OR REPLACE INTO {META_TABLE} VALUES (?, ?)
+                INSERT OR REPLACE INTO {META_TABLE} VALUES (?, ?, ?)
                 """,
-            (identifier, json.dumps(metadata)),
+            (identifier, json.dumps(metadata), int(is_solved)),
         )
 
         connection.execute(
