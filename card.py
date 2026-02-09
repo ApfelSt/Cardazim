@@ -43,7 +43,7 @@ class Card:
         creator: str,
         image_path: Union[str, PathLike],
         riddle: str,
-        solution: str | None = None,
+        solution: str,
     ) -> Card:
         """create Card instance from image file path"""
         image = CryptImage.create_from_path(image_path)
@@ -128,7 +128,3 @@ class Card:
         image, offset = cls._deserialize_image(data, offset)
         riddle, offset = cls._deserialize_string(data, offset)
         return cls(name, creator, image, riddle)
-
-    def is_solved(self) -> bool:
-        """check if the card has a solution"""
-        return self.solution is not None

@@ -8,12 +8,11 @@ import threading
 
 
 @pytest.mark.parametrize(
-    "server_ip, server_port, driver, card_name, card_creator, card_riddle, card_solution, card_image_path",
+    "server_ip, server_port, card_name, card_creator, card_riddle, card_solution, card_image_path",
     [
         (
             "127.0.0.1",
             5000,
-            "sql",
             "Test Card",
             "Tester",
             "Test?",
@@ -25,7 +24,6 @@ import threading
 def test_client_server_interaction(
     server_ip,
     server_port,
-    driver,
     card_name,
     card_creator,
     card_riddle,
@@ -33,7 +31,7 @@ def test_client_server_interaction(
     card_image_path,
 ):
     server_thread = threading.Thread(
-        target=server.run_server, args=(server_ip, server_port, driver), daemon=True
+        target=server.run_server, args=(server_ip, server_port), daemon=True
     )
     server_thread.start()
 

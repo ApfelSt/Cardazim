@@ -10,7 +10,7 @@ class CardDriver(ABC):
         pass
 
     @abstractmethod
-    def get_identifier(self, name: str, creator: str) -> str | None:
+    def get_identifier(self, name: str, creator: str) -> str:
         """Get the unique identifier for the card with the given name and creator."""
         pass
 
