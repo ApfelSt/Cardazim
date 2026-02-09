@@ -20,7 +20,7 @@ class CryptImage:
         cls, image_path: Union[str, PathLike], key_hash: bytes | None = None
     ) -> CryptImage:
         """create CryptImage instance from image file path"""
-        image = Image.open(image_path)
+        image = Image.open(image_path).convert("RGB")
         return cls(image, key_hash)
 
     @staticmethod

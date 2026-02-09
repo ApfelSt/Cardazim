@@ -12,7 +12,7 @@ import json
 import os
 
 DB_FILE = "cards.db"
-IMG_TYPE = "jpg"
+IMG_TYPE = "png"
 META_TABLE = "metadata"
 ID_TABLE = "identifiers"
 

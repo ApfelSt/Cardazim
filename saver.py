@@ -8,11 +8,11 @@ import os
 from card_driver import CardDriver
 from crypt_image import CryptImage
 
-IMG_PATH = "image.jpg"
+IMG_PATH = "image.png"
 META_PATH = "metadata.json"
 SOLVED_DIR = "solved"
 UNSOLVED_DIR = "unsolved"
-IMG_TYPE = "jpg"
+IMG_TYPE = "png"
 
 
 class Saver:
@@ -171,6 +171,7 @@ class Saver:
             return False  # no encryption, cannot solve
 
         key_hash = metadata["key_hash"]
+        key_hash = bytes.fromhex(key_hash)
         encrypted_image = CryptImage.create_from_path(metadata["image_path"], key_hash)
         sol_check = encrypted_image.decrypt(solution)
         if not sol_check:
@@ -193,7 +194,7 @@ class Saver:
         card = Card.create_from_path(
             name="Arazim",
             creator="Erez",
-            image_path="image.jpg",
+            image_path="image.png",
             riddle="What has keys but can't open locks?",
             solution="A piano",
         )
@@ -201,13 +202,13 @@ class Saver:
         card = Card.create_from_path(
             name="Talpiot",
             creator="Gani",
-            image_path="image2.jpg",
+            image_path="image2.png",
             riddle="Who is the king of nabaz?",
             solution="Gani",
         )
         self.save(card)
 
-        img = CryptImage.create_from_path("image2.jpg")
+        img = CryptImage.create_from_path("image2.png")
         img.encrypt("mooli")
         card = Card(
             name="Secret", creator="Gani", image=img, riddle="Who is the king of nabaz?"
