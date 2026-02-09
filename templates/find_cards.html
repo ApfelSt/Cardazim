@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Find Cards</title>
+</head>
+<body>
+
+    <h1>Find Cards</h1>
+    <form action="/cards/find" method="get">
+        <input type="text" name="name" placeholder="card name">
+        <input type="text" name="creator" placeholder="creator">
+        <input type="text" name="riddle" placeholder="riddle">
+        <button type="submit">Search</button>
+    </form>
+
+    {% if cards %}
+        <h2>Search Results:</h2>
+        <ul>
+            {% for card in cards %}
+                <li>
+                    <strong>{{ card.name }}</strong> by {{ card.creator }}<br>
+                    Riddle: {{ card.riddle }}
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No cards found.</p>
+    {% endif %}
+</body>
+</html>

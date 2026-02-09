@@ -1,4 +1,4 @@
-from __future__ import annotations  # So we can use Listener type hints within the class
+from __future__ import annotations
 import socket
 from connection import Connection
 from typing import Type
