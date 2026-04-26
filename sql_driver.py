@@ -138,3 +138,29 @@ class SQLDriver(CardDriver):
         )
 
         connection.commit()
+
+    def remove(self, identifier: str) -> None:
+        """Remove the card data associated with the identifier."""
+        connection = sqlite3.connect(self.db_path)
+        connection.execute(
+            f"""
+                DELETE FROM {META_TABLE}
+                WHERE identifier = ?
+                """,
+            (identifier,),
+        )
+        connection.execute(
+            f"""
+                DELETE FROM {ID_TABLE}
+                WHERE identifier = ?
+                """,
+            (identifier,),
+        )
+        connection.commit()
+
+    def clear(self) -> None:
+        """Clear all card data from the database."""
+        connection = sqlite3.connect(self.db_path)
+        connection.execute(f"DELETE FROM {META_TABLE}")
+        connection.execute(f"DELETE FROM {ID_TABLE}")
+        connection.commit()

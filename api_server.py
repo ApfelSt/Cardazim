@@ -7,6 +7,8 @@ from os import PathLike, abort
 import os
 from typing import Union
 from sql_driver import SQLDriver
+from crypt_image import CryptImage
+from PIL import Image
 
 ERROR_MSG = {"message": "404 not found :()"}
 
@@ -40,12 +42,12 @@ def create_app(saver: Saver) -> Flask:
         return get_creator_cards(creator, solved=False, all=False)
 
     @app.route("/creators/<creator>/cards/<name>", methods=["GET"])
-    def get_card(creator: str, name: str) -> Response:
+    def get_card(creator: str, name: str) -> Union[str, Response]:
         """load the card from the DB"""
         card = saver.load(name, creator)
-        return jsonify(saver.get_metadata(card)) if card else jsonify(ERROR_MSG)
+        return render_template("card.html", card=card) if card else jsonify(ERROR_MSG)
 
-    @app.route("/creators/<creator>/cards/<name>/image.jpg", methods=["GET"])
+    @app.route("/creators/<creator>/cards/<name>/image.png", methods=["GET"])
     def get_card_image(creator: str, name: str) -> Response:
         """get the image of the card"""
         img_path = saver.get_image_path(name, creator)
@@ -80,6 +82,50 @@ def create_app(saver: Saver) -> Flask:
 
         return render_template("solve_card.html", card=card, solved=check_solution)
 
+    @app.route("/", methods=["GET"])
+    def home() -> str:
+        return render_template("home.html")
+
+    @app.route("/cards/create", methods=["GET", "POST"])
+    def create_card() -> Union[Response, str]:
+        """create a new card with the provided data and image"""
+        if request.method == "POST":
+            name = request.form.get("name")
+            creator = request.form.get("creator")
+            riddle = request.form.get("riddle")
+            solution = request.form.get("solution")
+            image = request.files.get("image")
+
+            if not all([name, creator, riddle, solution, image]):
+                return render_template(
+                    "create_card.html", error="All fields are required."
+                )
+
+            # save the image to a temporary location and encrypt it
+            os.makedirs("temp_images", exist_ok=True)
+            temp_image_path = os.path.join("temp_images", image.filename)
+            image.save(temp_image_path)
+            # show the image for debugging
+            crypt_img = CryptImage.create_from_path(temp_image_path)
+            crypt_img.encrypt(solution)
+            # show the encrypted image for debugging
+            card = Card(
+                name=name,
+                creator=creator,
+                riddle=riddle,
+                solution=None,
+                image=crypt_img,
+            )
+            saver.save(card)
+            # remove the temporary image file
+            os.remove(temp_image_path)
+
+            return render_template(
+                "create_card.html", success="Card created successfully!"
+            )
+
+        return render_template("create_card.html")
+
     return app
 
 
@@ -87,6 +133,6 @@ if __name__ == "__main__":
     driver = SQLDriver()
     image_dir: Union[str, PathLike] = "./images"
     saver = Saver(driver, image_dir)
-    saver.init_simple_db()
+    saver.init_db()
     app = create_app(saver)
     app.run(host="127.0.0.1", port=5000)

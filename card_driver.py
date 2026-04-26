@@ -33,3 +33,13 @@ class CardDriver(ABC):
     def get_creator_card_names(self, creator: str) -> list[str]:
         """Return a list of card names created by the specified creator."""
         pass
+
+    @abstractmethod
+    def remove(self, identifier: str) -> None:
+        """Remove the card data associated with the identifier."""
+        pass
+
+    @abstractmethod
+    def clear(self) -> None:
+        """Clear all card data from the storage."""
+        pass

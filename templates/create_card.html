@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<a href="/">Back to Home</a>
+<head>
+    <title>Create Card</title>
+</head>
+<body>
+    
+    <h1>Create a New Card</h1>
+    <form action="/cards/create" method="post" enctype="multipart/form-data">
+        <input type="text" name="name" placeholder="card name" required><br>
+        <input type="text" name="creator" placeholder="creator" required><br>
+        <textarea name="riddle" placeholder="riddle" required></textarea><br>
+        <textarea name="solution" placeholder="solution" required></textarea><br>
+        <input type="file" name="image" accept="image/*"><br>
+        <button type="submit">Create Card</button>
+    </form>
+</body>
+</html>

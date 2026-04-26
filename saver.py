@@ -173,6 +173,9 @@ class Saver:
         key_hash = metadata["key_hash"]
         key_hash = bytes.fromhex(key_hash)
         encrypted_image = CryptImage.create_from_path(metadata["image_path"], key_hash)
+        print(
+            f"DEBUG: Attempting to solve card '{name}' by '{creator}' with solution '{solution}'"
+        )
         sol_check = encrypted_image.decrypt(solution)
         if not sol_check:
             return False
@@ -188,6 +191,19 @@ class Saver:
             return False
         self.driver.save(metadata, identifier)
         return True
+
+    def clear_db(self) -> None:
+        """clear the database by removing all metadata and images"""
+        self.driver.clear()
+        for entry in os.listdir(self.image_dir):
+            entry_path = self.image_dir / entry
+            if entry_path.is_file():
+                os.remove(entry_path)
+
+    def init_db(self) -> None:
+        """initialize the database with sample data"""
+        self.clear_db()
+        # self.init_simple_db()
 
     def init_simple_db(self) -> None:
         """initialize a simple database by scanning the image directory"""

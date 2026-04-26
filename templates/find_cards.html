@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+<a href="/">Back to Home</a>
 <head>
     <title>Find Cards</title>
 </head>
@@ -20,6 +21,7 @@
                 <li>
                     <strong>{{ card.name }}</strong> by {{ card.creator }}<br>
                     Riddle: {{ card.riddle }}
+                    <a href="/creators/{{ card.creator }}/cards/{{ card.name }}">View Card</a>
                 </li>
             {% endfor %}
         </ul>

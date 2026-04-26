@@ -106,3 +106,17 @@ class FilesystemDriver(CardDriver):
         if creator not in self.cards:
             return []
         return list(self.cards[creator].keys())
+
+    def remove(self, identifier: str) -> None:
+        """remove the card with the given identifier from the storage"""
+        pattern = re.compile(rf".*{identifier}$")
+        for status_dir in [SOLVED_DIR, UNSOLVED_DIR]:
+            for entry in os.listdir(
+                FilesystemDriver._to_path(self.storage_dir, status_dir)
+            ):
+                if pattern.match(entry):
+                    card_dir = FilesystemDriver._to_path(
+                        self.storage_dir, status_dir, entry
+                    )
+                    os.rmdir(card_dir)
+                    return
