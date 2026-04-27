@@ -1,0 +1,24 @@
+ <!DOCTYPE html>
+ <html lang="en">
+    <a href="/">Back to Home</a>
+    <head>
+    <link rel="stylesheet" href="/static/styles.css">
+        <title>Solve Card Riddle</title>
+    </head>
+    <body>
+        {% if solved %}
+            <p>Congratulations! This card is solved!</p>
+        {% else %}
+            <h1>Solve Card Riddle</h1>
+            <h2>{{ card.name }} by {{ card.creator }}</h2>
+            <p>Riddle: {{ card.riddle }}</p>
+            <form action="/creators/{{ card.creator }}/cards/{{ card.name }}/solve" method="post">
+                <input type="text" name="solution" placeholder="Your solution">
+                <button type="submit">Submit Solution</button>
+            </form>
+            {% if message %}
+                <p>{{ message }}</p>
+            {% endif %}
+        {% endif %}
+    </body>
+</html>

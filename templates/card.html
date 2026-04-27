@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+<a href="/">Back to Home</a>
+<head>
+    <link rel="stylesheet" href="/static/styles.css">
+    <title>Card {{ card.name }}</title>
+</head>
+<body>
+    <h1>{{ card.name }}</h1>
+    <p><strong>Creator:</strong> {{ card.creator }}</p>
+    <p><strong>Riddle:</strong> {{ card.riddle }}</p>
+    <a href="/creators/{{ card.creator }}/cards/{{ card.name }}/solve">Solve Card</a><br>
+    <a href="/creators/{{ card.creator }}/cards/{{ card.name }}/image.png">View Image</a>
+</body>
+
+</html>
